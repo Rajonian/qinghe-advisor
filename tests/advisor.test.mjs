@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {normalizeInput,ruleAnalysis,validateAnalysis,nextMonth} from '../lib/advisor.mjs';
 const input=text=>normalizeInput({referenceDate:'2026-10-22',history:[{role:'user',content:text}],customer:{stage:'补货跟进'}});
-test('余量较多且下月联系时暂停补货并建议待确认回访',()=>{const a=ruleAnalysis(input('还有十几粒，最近没怎么吃，下个月再联系我吧。'));assert.equal(a.stage,'暂缓跟进');assert.equal(a.shouldPausePurchase,true);assert.equal(a.task.time,'2026-11-01T10:00');assert.equal(a.task.needsConfirmation,true);assert(a.tags.includes('使用不规律'));assert.equal(a.mode,'rules')});
+test('余量较多且下月联系时暂停补货并建议待确认回访',()=>{const a=ruleAnalysis(input('还有十几粒，最近没怎么吃，下个月再联系我吧。'));assert.equal(a.stage,'暂缓跟进');assert.equal(a.shouldPausePurchase,true);assert.equal(a.task.time,'');assert.equal(a.task.timingKind,'preference');assert.equal(a.task.needsConfirmation,true);assert(a.tags.includes('客户自述：近期使用较少'));assert.equal(a.mode,'rules')});
 test('拒绝联系时不创建营销任务',()=>{const a=ruleAnalysis(input('不要再联系我了。'));assert.equal(a.stage,'停止营销');assert.equal(a.task,null);assert.equal(a.shouldPausePurchase,true)});
 test('用药问题升级专业处理',()=>{const a=ruleAnalysis(input('我在吃药，可以一起用吗？'));assert.equal(a.risk,'professional');assert.equal(a.task.type,'专业协助');assert.equal(a.shouldPausePurchase,true)});
 test('模型不能覆盖停止联系的业务约束',()=>{const i=input('不要再联系我了。'),fake={...ruleAnalysis(input('我想补货')),stage:'补货跟进'};assert.equal(validateAnalysis(fake,i).stage,'停止营销')});
