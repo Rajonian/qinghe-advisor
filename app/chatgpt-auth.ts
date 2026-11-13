@@ -18,11 +18,20 @@ const SIGN_IN_PATH = "/signin-with-chatgpt";
 const SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
 
+// 非 ChatGPT 托管环境（普通浏览器直接访问）下的固定演示账号，
+// 使工作台可公开演示；ChatGPT 环境仍优先使用平台注入的真实身份。
+const DEMO_USER: ChatGPTUser = {
+  userId: "demo-advisor",
+  displayName: "演示顾问",
+  email: "demo@local",
+  fullName: "演示顾问",
+};
+
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const userId = requestHeaders.get(USER_ID_HEADER);
   const email = requestHeaders.get(USER_EMAIL_HEADER);
-  if (!userId || !email) return null;
+  if (!userId || !email) return DEMO_USER;
 
   const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
   const fullName =
